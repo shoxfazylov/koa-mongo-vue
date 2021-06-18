@@ -9,17 +9,29 @@
       <div class="donate-amount-box">
         <div class="donate-amount">
           <div class="denomination" v-for="preset in presets" v-bind:class="{ 'selected': preset == suggestion }" @click="addAmount(preset)">
-            <label>{{preset}}</label>
+            <label>{{currency.symbol}}{{preset}}</label>
           </div>
         </div>
         <div class="denomination-other">
-          <input autocomplete="off" type="text" name="amount" value="" placeholder="Enter Other Amount">
+          <div class="donate-amount-block">
+            <div class="donate-amount-currency">
+              {{currency.symbol}}
+            </div>
+            <div class="donate-amount-price">
+              {{suggestion}}
+            </div>
+            <select v-model="currency.code" v-on:change="changeCurrency($event)">
+              <option v-for="curr in currencies" v-bind:value="curr.code">
+                {{ curr.symbol }}
+              </option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
     <div class="donate-blue donate-payment">
       <div class="donate-submit">
-        <button type="submit" autocomplete="off">Donate ${{this.suggestion}}</button>
+        <button type="submit" autocomplete="off">Donate {{currency.symbol}}{{this.suggestion}}</button>
       </div>
     </div>
   </div>
@@ -40,16 +52,32 @@
             {name: "Euro", code: "EUR", symbol: "€", rate: 0.897597},
             {name: "British Pound", code: "GBP", symbol: "£", rate: 0.81755},
             {name: "Russian Ruble", code: "RUB", symbol: "₽", rate: 63.461993}
-        ]
+        ],
+        currency: {name: "US Dollar", code: "USD", symbol: "$", rate: 1},
       }
     },
-    created: function () {
-
-    },
     mounted: function () {
-
+      this.initForm();
     },
     methods: {
+      changeCurrency (event){
+        for (let item of this.currencies) {
+          if(item.code == event.target.value){
+            this.currency = item;
+          }
+        }
+        this.convertAmount();
+      },
+      convertAmount(){
+        for (let k in this.presets) {
+          this.presets[k] = this.presets[k] * this.currency.rate
+          this.presets[k].toFixed(2)
+        }
+        console.log(this.presets);
+      },
+      initForm (){
+
+      },
       addAmount(money){
           this.suggestion = money
       },
@@ -141,12 +169,32 @@
     top: 2px;
     content: "$";
   }
-
+  .donate-amount{
+    display: inline-block;
+    width: 100%;
+  }
   .donate-amount .selected, .denomination-other input.selected, .donate-amount .denomination:hover {
     background-color: #EC3029;
     border: 0;
   }
-
+  .donate-amount-block{
+    display: flex;
+    justify-content: space-evenly;
+    background-color: #171b24;
+    padding: 13px 0;
+  }
+  .donate-amount-block select{
+    position: relative;
+    color: #FFF;
+    font-size: 14px;
+    font-weight: 600;
+    width: inherit;
+    text-align: center;
+    background-color: #171b24;
+    border: none;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+  }
   .donate-black h2 {
     font-family: "Oswald", sans-serif;
     color: #FFF;
