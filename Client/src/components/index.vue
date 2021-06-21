@@ -8,20 +8,20 @@
       <h3>Donation amount*</h3>
       <div class="donate-amount-box">
         <div class="donate-amount">
-          <div class="denomination" v-for="preset in presets" v-bind:class="{ 'selected': preset == suggestion }" @click="addAmount(preset)">
-            <label>{{currency.symbol}}{{preset}}</label>
+          <div class="denomination" v-for="amount in numbers" v-bind:class="{ 'selected': amount == suggestion }" @click="addAmount(amount)">
+            <label>{{currency.symbol}}{{amount}}</label>
           </div>
         </div>
         <div class="denomination-other">
           <div class="donate-amount-block">
             <div class="donate-amount-currency">
-              {{currency.symbol}}
+              {{this.currency.symbol}}
             </div>
             <div class="donate-amount-price">
               {{suggestion}}
             </div>
-            <select v-model="currency.code" v-on:change="changeCurrency($event)">
-              <option v-for="curr in currencies" v-bind:value="curr.code">
+            <select v-on:change="changeCurrency($event)">
+              <option v-for="curr in this.currencies" v-bind:value="curr.code">
                 {{ curr.symbol }}
               </option>
             </select>
@@ -31,7 +31,7 @@
     </div>
     <div class="donate-blue donate-payment">
       <div class="donate-submit">
-        <button type="submit" autocomplete="off">Donate {{currency.symbol}}{{this.suggestion}}</button>
+        <button type="submit" autocomplete="off">Donate {{this.currency.symbol}}{{this.suggestion}}</button>
       </div>
     </div>
   </div>
@@ -54,29 +54,43 @@
             {name: "Russian Ruble", code: "RUB", symbol: "₽", rate: 63.461993}
         ],
         currency: {name: "US Dollar", code: "USD", symbol: "$", rate: 1},
+        numbers: []
       }
     },
+    computed: {
+        amounts: function () {
+            let amounts = [];
+            this.presets.forEach(function($match, $i) {
+                amounts[$i] = $match;
+            });
+            return amounts;
+        }
+    },
     mounted: function () {
-      this.initForm();
+        this.initForm();
     },
     methods: {
+        initForm (){
+          this.numbers = this.amounts;
+        },
       changeCurrency (event){
         for (let item of this.currencies) {
           if(item.code == event.target.value){
             this.currency = item;
           }
         }
+        console.log(this.currency)
         this.convertAmount();
       },
       convertAmount(){
-        for (let k in this.presets) {
-          this.presets[k] = this.presets[k] * this.currency.rate
-          this.presets[k].toFixed(2)
+        console.log('presets: ',this.presets);
+        for (let k in this.amounts) {
+            this.amounts[k] = this.roundTo5(this.presets[k] * this.currency.rate);
+            console.log('amounts: ',this.amounts);
         }
-        console.log(this.presets);
       },
-      initForm (){
-
+      roundTo5(price) {
+        return Math.round(price / 50) * 50;
       },
       addAmount(money){
           this.suggestion = money
