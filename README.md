@@ -27,15 +27,6 @@
     └─Server               # server folder
        └─my-koa-app.js     # router
        
-       
-### Frontend start
-```bash
-    # Enter the Client directory to install dependencies npm install
-    cd Client
-    npm install
-    npm start
-```
-
 ### Backend start
 ```bash
     # Open a new tab
@@ -45,3 +36,12 @@
     npm install
     npm start
 ```
+
+### Frontend start
+```bash
+    # Enter the Client directory to install dependencies npm install
+    cd Client
+    npm install
+    npm start
+```
+
