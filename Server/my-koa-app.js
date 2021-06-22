@@ -14,13 +14,22 @@ app.use(async (ctx, next) => {
   await next();
 });
 
+router.post('/donate', koaBody, async (ctx) => {
+  let operation = await list.insert(ctx.request.body);
+  ctx.response.type = 'application/json';
+  ctx.body = {
+    ok: true,
+    operation
+  };
+});
+
 router.get('/getList', async (ctx) => {
   let logContent = await list.find();
   ctx.response.type = 'application/json';
   ctx.body = logContent;
 });
 
-router.delete('/removeItem/:id', async (ctx) => {
+router.delete('/remove/:id', async (ctx) => {
   let id = parseInt(ctx.params.id);
   let operation = await list.remove({id}, function (err) {
     return !err
@@ -32,14 +41,7 @@ router.delete('/removeItem/:id', async (ctx) => {
   };
 });
 
-router.post('/donate', koaBody, async (ctx) => {
-  let operation = await list.insert(ctx.request.body);
-  ctx.response.type = 'application/json';
-  ctx.body = {
-    success: true,
-    operation
-  };
-});
+
 
 
 app.use(router.routes());

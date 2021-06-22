@@ -17,9 +17,7 @@
             <div class="donate-amount-currency">
               {{this.currency.symbol}}
             </div>
-            <div class="donate-amount-price">
-              {{suggestion}}
-            </div>
+            <input type="text" class="donate-amount-price" v-model="suggestion">
             <select v-on:change="changeCurrency($event)">
               <option v-for="curr in this.currencies" v-bind:value="curr.code">
                 {{ curr.symbol }}
@@ -31,8 +29,9 @@
     </div>
     <div class="donate-blue donate-payment">
       <div class="donate-submit">
-        <button type="submit" autocomplete="off">Donate {{this.currency.symbol}}{{this.suggestion}}</button>
+        <button @click="saveData()" type="submit" autocomplete="off">Donate {{this.currency.symbol}}{{this.suggestion}}</button>
       </div>
+      <a class="donations-link" @click="donations()">Donate list</a>
     </div>
   </div>
 </template>
@@ -70,23 +69,20 @@
         this.initForm();
     },
     methods: {
-        initForm (){
-          this.numbers = this.amounts;
-        },
+      initForm (){
+        this.numbers = this.amounts;
+      },
       changeCurrency (event){
         for (let item of this.currencies) {
           if(item.code == event.target.value){
             this.currency = item;
           }
         }
-        console.log(this.currency)
         this.convertAmount();
       },
       convertAmount(){
-        console.log('presets: ',this.presets);
         for (let k in this.amounts) {
             this.amounts[k] = this.roundTo5(this.presets[k] * this.currency.rate);
-            console.log('amounts: ',this.amounts);
         }
       },
       roundTo5(price) {
@@ -97,195 +93,22 @@
       },
       saveData() {
         let _this = this;
-        if (this.newTitle) {
-          let displayData = {
-            "id": this.id,
-            "title": this.newTitle
+        _this.suggestion = parseFloat(_this.suggestion)
+        if(Number.isInteger(_this.suggestion)){
+          let data = {
+            "amount": _this.suggestion,
+            "currency": _this.currency.code
           };
-          this.lists.push(displayData);
-          this.id++;
-          this.isDisplay = false;
-          this.$http.post('/api/donate', displayData).then(function (res) {
-            //_this.refreshData();
+          this.$http.post('/api/donate', data).then(function (res) {
+            swal('Good job!', 'Thank you for your donation!', 'success');
           });
-        } else {
-          swal('Добавлен');
+        }else{
+          swal('Oops...', 'Something went wrong!', 'error')
         }
+      },
+      donations (){
+        this.$router.push('/donations');
       }
     }
   }
 </script>
-<style scoped>
-  .donate {
-    background-color: #171b24;
-    width: 500px;
-    color: #FFF;
-  }
-
-  .donate p {
-    line-height: 24px;
-    font-size: 14px;
-    font-weight: 300;
-  }
-
-  .donate h3 {
-    font-size: 14px;
-    font-weight: 300;
-    margin-bottom: 30px;
-  }
-
-  .denomination {
-    float: left;
-    width: 33%;
-    text-align: center;
-    padding: 13px 0;
-    cursor: pointer;
-    background-color: #171b24;
-    margin: 0 1px 1px 0;
-    transition: background-color 0.2s ease;
-  }
-
-  .denomination label {
-    font-weight: 600;
-    cursor: pointer;
-    margin: 0;
-  }
-
-  .denomination input {
-    left: -10001px;
-    position: absolute;
-  }
-
-  .denomination-other {
-    width: 99.8%;
-  }
-
-  .denomination-other input {
-    position: relative;
-    color: #FFF;
-    font-size: 14px;
-    font-weight: 600;
-    width: inherit;
-    text-align: center;
-    background-color: #171b24;
-    border: none;
-    padding: 13px 0;
-    transition: background-color 0.2s ease;
-  }
-
-  .denomination-other input:hover {
-    background-color: #ec3029;
-  }
-
-  .denomination-other input:before {
-    position: absolute;
-    left: 6px;
-    top: 2px;
-    content: "$";
-  }
-  .donate-amount{
-    display: inline-block;
-    width: 100%;
-  }
-  .donate-amount .selected, .denomination-other input.selected, .donate-amount .denomination:hover {
-    background-color: #EC3029;
-    border: 0;
-  }
-  .donate-amount-block{
-    display: flex;
-    justify-content: space-evenly;
-    background-color: #171b24;
-    padding: 13px 0;
-  }
-  .donate-amount-block select{
-    position: relative;
-    color: #FFF;
-    font-size: 14px;
-    font-weight: 600;
-    width: inherit;
-    text-align: center;
-    background-color: #171b24;
-    border: none;
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-  }
-  .donate-black h2 {
-    font-family: "Oswald", sans-serif;
-    color: #FFF;
-    font-size: 32px;
-    margin-bottom: 30px;
-  }
-
-  .donate-black h2 span {
-    display: block;
-    float: left;
-    font-size: 16px;
-    padding-top: 7px;
-    margin-right: 20px;
-    text-align: center;
-    width: 30px;
-    height: 25px;
-    background-color: #ec3029;
-    border-radius: 50%;
-  }
-
-  .donate-type label,
-  .donate-payment label {
-    font-size: 14px;
-    font-weight: 300;
-    margin-right: 30px;
-  }
-
-  .donate-blue {
-    background-color: #1e252d;
-    padding: 25px;
-  }
-
-  .donate-black {
-    padding: 25px;
-  }
-
-  .donate-submit button {
-    font-family: "Oswald", sans-serif;
-    width: 100%;
-    background-color: #ec3029;
-    border: none;
-    color: #FFF;
-    font-size: 20px;
-    line-height: 20px;
-    padding: 14px 0;
-    margin: 30px 0;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-
-  .donate-submit small {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 13px;
-  }
-
-  ::-webkit-input-placeholder {
-    color: #FFF;
-    font-size: 14px;
-    font-weight: 300;
-  }
-
-  :-moz-placeholder {
-    color: #FFF;
-    font-weight: 300;
-  }
-
-  ::-moz-placeholder {
-    color: #FFF;
-    font-weight: 300;
-  }
-
-  :-ms-input-placeholder {
-    font-weight: 300;
-    color: #FFF;
-  }
-
-  *:focus {
-    outline: none;
-  }
-</style>
